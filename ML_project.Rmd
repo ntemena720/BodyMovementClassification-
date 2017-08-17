@@ -1,0 +1,182 @@
+---
+title: "Machine Learning Project"
+author: "Noel Temena"
+date: "August 17, 2017"
+output: html_document
+---
+
+Six young health participants were asked to perform one set of 10 repetitions of the Unilateral Dumbbell Biceps Curl in five different fashions: exactly according to the specification (Class A), throwing the elbows to the front (Class B), lifting the dumbbell only halfway (Class C), lowering the dumbbell only halfway (Class D) and throwing the hips to the front (Class E).   
+
+***
+
+###Dataset   
+
+Training data: https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv   
+
+Test data: https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv   
+
+
+
+###Goal:    
+
+Predict the manner in which they did the exercise.   
+
+
+###Model Methodology   
+
+Outcome variable “CLASSE” has a factor data structure (A,B,C,D,E). This variable is a categorical data so any classifier will work. To name a few: SVM,CART, Random Forest.  Since the course have used random forest extensively as an example, I will use Random forest. Comparitively, I will use SVM using C-classification type against RF result.   
+
+
+###Cross Validation   
+
+I will be using K-fold cross validation with k = 3. Using the for loop, the __program will create 3 distinct sets of training and test data and produce 3 model fit values__. Accuracy for these 3 model fit values will then be average to establish an average accuracy.   
+
+###Expected out of sample error
+
+Mean average value of accuracy will then be subtracted against 1 to get the sample error.  
+Formula: 1 - mean(3 accuracy values)
+
+***   
+
+
+Lets start by loading all the libraries
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r, message=FALSE, warning=FALSE}
+library(caret)
+library(readr)
+library(mlbench)
+library(e1071)
+```
+
+Read the training and test data
+
+```{r echo=TRUE, message=FALSE, warning=FALSE, cache=TRUE}
+allData <- read_csv('pml-training.csv',col_names = TRUE,na=c("NA","#DIV/0!", "")) 
+allDataTest <- read_csv('pml-testing.csv',col_names = TRUE,na=c("NA","#DIV/0!", ""))
+```   
+
+Clean the Data by using only column with no missing values
+```{r echo=TRUE}
+allData <-allData[,colSums(is.na(allData)) == 0]
+allDataTest <-allDataTest[,colSums(is.na(allDataTest)) == 0]
+```
+
+Take out unnecessary columns that has no corelation to the  outcome variable
+```{r echo=TRUE}
+allData   <-allData[,-c(1:7)]
+allDataTest <-allDataTest[,-c(1:7)]
+
+```    
+
+
+Show the structure of CLASSE variable
+```{r echo=TRUE}
+#dim(allData)
+table(allData$classe)# ABCDE
+```   
+
+Now that we have establish the data structure for the Classe variable and confirm that its a __categorical data__, we will use Random forest and SVM to build a model.   
+
+***   
+
+
+Before we begin to model in Random forest,lets load parallel processing to speed up the results.
+```{r echo=TRUE, message=FALSE, warning=FALSE, cache=TRUE}
+library(parallel)
+library(doParallel)
+cluster <- makeCluster(detectCores() - 1) # convention to leave 1 core for OS
+registerDoParallel(cluster)
+#Configure trainControl object
+fitControl <- trainControl(method = "cv", number = 3, allowParallel = TRUE)
+```   
+
+Start Cross validation
+```{r echo=TRUE, cache=TRUE}
+set.seed(333)
+folds <- createFolds(allData$classe,k= 3)
+Accu1_array <- array()## accuracy value storage
+```   
+
+Create 3 distinct data sets, get the model, predict and get accuracy for each iteration
+```{r echo=TRUE, cache=TRUE}
+for(i in 1:3)
+{ 
+    data_train <- allData[(-folds[[i]]),]
+    data_test  <- allData[(folds[[i]]),]
+    fit_rf <- train(factor(classe) ~., method="rf", data= data_train, trControl = fitControl)
+    pred_rf <- predict(fit_rf,data_test)
+    cm <- confusionMatrix(pred_rf,data_test$classe)
+    Accu1_array[i] <- as.numeric(cm$overall['Accuracy'])
+}
+```   
+
+Stop parallel instance
+```{r echo=TRUE}
+stopCluster(cluster)
+registerDoSEQ()
+```   
+
+Get mean of the 3 accuracy and show Out of Sample Rate
+
+```{r echo=TRUE, cache=TRUE}
+mean(Accu1_array) #93% SVM 99% for RF
+1- mean(Accu1_array)
+```
+___As you can see, mean accuracy of the 3 Random forest model is 99.2% with .7% out of sample error___   
+
+***   
+
+
+Now lets try SVM model.
+
+
+Start Cross validation
+```{r echo=TRUE, cache=TRUE}
+set.seed(999)
+folds <- createFolds(allData$classe,k= 3)
+Accu2_array <- array()## accuracy value storage
+```   
+
+Create 3 distinct data sets, get the model, predict and get accuracy for each iteration   
+
+```{r echo=TRUE, cache=TRUE}
+for(i in 1:3)
+{ 
+    data_train <- allData[(-folds[[i]]),]
+    data_test  <- allData[(folds[[i]]),]
+    fit_svm <- svm(classe ~., method="svm", data= data_train, type= "C-classification")
+    pred_svm <- predict(fit_svm,data_test)
+    cm <- confusionMatrix(pred_svm,data_test$classe)
+    Accu2_array[i] <- as.numeric(cm$overall['Accuracy'])
+}
+```   
+
+Get mean of the 3 accuracy and show Out of Sample Rate.   
+
+
+```{r echo=TRUE, cache=TRUE}
+mean(Accu2_array) #93% SVM 99% for RF
+1- mean(Accu2_array)
+```
+Mean accuracy of the 3 SVM model is 93.3% with 6.6% out of sample error.
+
+___Clearly Random forest model is the most accurate.___
+
+This will be our final model to our data set.   
+
+***   
+
+___Credits:___
+IGreski for the parallel processing: https://github.com/lgreski/datasciencectacontent/blob/master/markdown/pml-randomForestPerformance.md   
+
+
+DATASET: Bulling, A.; Gellersen, H.; Ugulino, W.; Fuks, H.Qualitative Activity Recognition of Weight Lifting Exercises. Proceedings of 4th International Conference in Cooperation with SIGCHI (Augmented Human '13) . Stuttgart, Germany: ACM SIGCHI, 2013. (DATASET)   
+
+
+***  
+
