@@ -24,17 +24,18 @@ Predict the manner in which they did the exercise.
 
 ###Model Methodology   
 
-Outcome variable “CLASSE” has a factor data structure (A,B,C,D,E). This variable is a categorical data so any classifier will work. To name a few: SVM,CART, Random Forest.  Since the course have used random forest extensively as an example, I will use Random forest. Comparitively, I will use SVM using C-classification type against RF result.   
+Outcome variable “CLASSE” has a factor data structure (A,B,C,D,E). This variable, a categorical data will be best predicted using any classifier predictive method. Since the Coursera course have used random forest extensively, I will start with using Random forest and compare it against SVM using C-classification.   
 
 
 ###Cross Validation   
 
-I will be using K-fold cross validation with k = 3. Using the for loop, the __program will create 3 distinct sets of training and test data and produce 3 model fit values__. Accuracy for these 3 model fit values will then be average to establish an average accuracy.   
+I will be using K-fold cross validation with k = 3 value. Using the for loop, the __program will create 3 distinct sets of training and test data__. This will produce 3 model fit values which will be averaged to establish an average accuracy.   
 
 ###Expected out of sample error
 
-Mean average value of accuracy will then be subtracted against 1 to get the sample error.  
+Mean average value of accuracy will be subtracted against 1 to get the out of sample error.  
 Formula: 1 - mean(3 accuracy values)
+NOTE: Out of sample error is the same as __MISCLASSIFICATION RATE__
 
 ***   
 
@@ -103,7 +104,7 @@ Accu1_array <- array()## accuracy value storage
 ```   
 
 Create 3 distinct data sets, get the model, predict and get accuracy for each iteration
-```{r echo=TRUE, cache=TRUE}
+```{r echo=TRUE, message=FALSE, warning=FALSE, cache=TRUE}
 for(i in 1:3)
 { 
     data_train <- allData[(-folds[[i]]),]
@@ -115,11 +116,16 @@ for(i in 1:3)
 }
 ```   
 
-Stop parallel instance
-```{r echo=TRUE}
+Stop parallel instance and lot predicted RF classe 
+```{r}
 stopCluster(cluster)
 registerDoSEQ()
+qplot(pred_rf,factor(data_test$classe), xlab = "predicted", ylab = "actual", colour= data_test$classe,geom = c("boxplot", "jitter"))
 ```   
+
+***   
+
+
 
 Get mean of the 3 accuracy and show Out of Sample Rate
 
@@ -127,7 +133,7 @@ Get mean of the 3 accuracy and show Out of Sample Rate
 mean(Accu1_array) #93% SVM 99% for RF
 1- mean(Accu1_array)
 ```
-___As you can see, mean accuracy of the 3 Random forest model is 99.2% with .7% out of sample error___   
+As you can see, mean accuracy of the 3 Random forest model is ___99.2%___ with ___.7%___ out of sample error.  
 
 ***   
 
@@ -156,20 +162,37 @@ for(i in 1:3)
 }
 ```   
 
-Get mean of the 3 accuracy and show Out of Sample Rate.   
+Plot predicted SVM classe 
+```{r echo=TRUE, cache=TRUE}
+qplot(pred_svm,factor(data_test$classe), xlab = "predicted", ylab = "actual", colour= data_test$classe,geom = c("boxplot", "jitter"))
+```   
+
+***   
 
 
+
+Get mean of the 3 accuracy and show Out of Sample Rate. 
 ```{r echo=TRUE, cache=TRUE}
 mean(Accu2_array) #93% SVM 99% for RF
 1- mean(Accu2_array)
 ```
-Mean accuracy of the 3 SVM model is 93.3% with 6.6% out of sample error.
+Mean accuracy of the 3 SVM model is ___93.3%___ with ___6.6%___ out of sample error.
 
-___Clearly Random forest model is the most accurate.___
+___Clearly Random forest model with 99% accuracy is the most accurate.___
 
-This will be our final model to our data set.   
+
+
+***  
+
+
+So lets apply this final RF model to predict the AllDataTest with 20 rows.
+```{r echo=TRUE, cache=TRUE}
+final_rf <- predict(fit_rf,allDataTest )
+final_rf
+```   
 
 ***   
+
 
 ___Credits:___
 IGreski for the parallel processing: https://github.com/lgreski/datasciencectacontent/blob/master/markdown/pml-randomForestPerformance.md   
