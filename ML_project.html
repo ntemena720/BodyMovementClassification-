@@ -124,16 +124,22 @@ $(document).ready(function () {
 </div>
 
 
-<p>Six young health participants were asked to perform one set of 10 repetitions of the Unilateral Dumbbell Biceps Curl in five different fashions: exactly according to the specification (Class A), throwing the elbows to the front (Class B), lifting the dumbbell only halfway (Class C), lowering the dumbbell only halfway (Class D) and throwing the hips to the front (Class E).</p>
+<p>Six young health participants were asked to perform one set of 10 repetitions of the Unilateral Dumbbell Biceps Curl in five different fashions:</p>
+<p>Class A : exactly according to the specification<br />
+Class B : throwing the elbows to the front<br />
+Class C : lifting the dumbbell only halfway<br />
+Class D : lowering the dumbbell only halfway<br />
+Class E : throwing the hips to the front</p>
 <hr />
+<div id="goal" class="section level3">
+<h3>Goal:</h3>
+<p>Predict the manner in which they did the exercise.</p>
+<hr />
+</div>
 <div id="dataset" class="section level3">
 <h3>Dataset</h3>
 <p>Training data: <a href="https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv" class="uri">https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv</a></p>
 <p>Test data: <a href="https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv" class="uri">https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv</a></p>
-</div>
-<div id="goal" class="section level3">
-<h3>Goal:</h3>
-<p>Predict the manner in which they did the exercise.</p>
 </div>
 <div id="model-methodology" class="section level3">
 <h3>Model Methodology</h3>
@@ -145,8 +151,8 @@ $(document).ready(function () {
 </div>
 <div id="expected-out-of-sample-error" class="section level3">
 <h3>Expected out of sample error</h3>
-<p>Mean average value of accuracy will be subtracted against 1 to get the out of sample error.<br />
-Formula: 1 - mean(3 accuracy values) NOTE: Out of sample error is the same as <strong>MISCLASSIFICATION RATE</strong></p>
+<p>Ideally out of sample error rate should be 0% and accuracy rate to be 100%. In predictive data analysis anywhere between 70% and 99% accuracy and 30% to 1% out of sample error rate or <strong>MISCLASSIFICATION RATE</strong> is acceptable.</p>
+<p>To get the out of sample error rate: 1 - accuracy rate</p>
 <hr />
 <p>Lets start by loading all the libraries</p>
 <pre class="r"><code>library(caret)
@@ -163,8 +169,9 @@ allDataTest &lt;-allDataTest[,colSums(is.na(allDataTest)) == 0]</code></pre>
 <pre class="r"><code>allData   &lt;-allData[,-c(1:7)]
 allDataTest &lt;-allDataTest[,-c(1:7)]</code></pre>
 <p>Show the structure of CLASSE variable</p>
-<pre class="r"><code>#dim(allData)
-table(allData$classe)# ABCDE</code></pre>
+<pre class="r"><code>class(allData$classe)</code></pre>
+<pre><code>## [1] &quot;character&quot;</code></pre>
+<pre class="r"><code>table(allData$classe)# ABCDE</code></pre>
 <pre><code>## 
 ##    A    B    C    D    E 
 ## 5580 3797 3422 3216 3607</code></pre>
@@ -191,7 +198,7 @@ Accu1_array &lt;- array()## accuracy value storage</code></pre>
     cm &lt;- confusionMatrix(pred_rf,data_test$classe)
     Accu1_array[i] &lt;- as.numeric(cm$overall['Accuracy'])
 }</code></pre>
-<p>Stop parallel instance and lot predicted RF classe</p>
+<p>Stop parallel instance and plot predicted classe outcome</p>
 <pre class="r"><code>stopCluster(cluster)
 registerDoSEQ()
 qplot(pred_rf,factor(data_test$classe), xlab = &quot;predicted&quot;, ylab = &quot;actual&quot;, colour= data_test$classe,geom = c(&quot;boxplot&quot;, &quot;jitter&quot;))</code></pre>
