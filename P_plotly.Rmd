@@ -1,0 +1,87 @@
+---
+title: 'Data Products: Plotly Assignment'
+author: "Noel Temena"
+date: "September 9, 2017"
+output: ioslides_presentation
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+## Plotly
+Machine Learning sample output taken from a dummy data set.
+Graph shown are a visual representation of the different accuracy values.
+
+```{r  echo=FALSE, message=FALSE, warning=FALSE}
+library(ggplot2)
+library(plotly)
+
+letter_fact <- factor(LETTERS[1:5]) # dummy factor observation
+n <- 500 # default number of rows or observation
+df <- data.frame(Category = replicate(n,sample(letter_fact,1))) # setup a data frame with rows and values
+df$y <- df$Category # create a 2nd column using the same values form the 1st column
+
+change_col_y <- function(value)
+{
+   if (value == "A") {answer <- sample(c("B","E"),1,prob = c(0.9, 0.1))}
+   else if (value == "B") {answer <- sample(c("C","D","E"),1,prob = c(0.4, 0.4,0.2))}
+   else if (value == "C") {answer <- sample(c("B","D"),1,prob = c(0.8, 0.2))}
+   else if (value == "D") {answer <- sample(c("C","E"),1,prob = c(0.9, 0.1))}
+   else if (value == "E") {answer <- sample(c("D","A"),1,prob = c(0.9, 0.1))}
+   returnValue(answer)
+}
+
+plot_data <- function(number)
+{   
+   plot_title <- paste("Machine Learning: ", number, "% predictive analysis accuracy")
+   p <- qplot(x= df$y,y= df$Category, data = df, xlab = "Predicted", ylab = "Actual", geom = c("boxplot", "jitter"), colour= Category)
+   p <- ggplotly(p)
+   p
+}
+# main= plot_title,
+
+get_pointer <- function(num1){
+   df$y <- df$Category
+   result <- sample(1:500,((100 - num1)  / 100) * 500)
+   returnValue(result)
+}
+```
+
+## Ideal Plot 1
+Sample Machine learning output with 100% predictive accuracy 
+```{r  echo=FALSE, message=FALSE, warning=FALSE}
+plot_data(100)
+```
+
+
+
+## Plot 2
+ Sample Machine learning output with 96% predictive accuracy 
+```{r  echo=FALSE, message=FALSE, warning=FALSE}
+y_pointer <- get_pointer(96)
+df$y <- df$Category
+df$y[y_pointer] -> y_values 
+df$y[y_pointer] <- sapply(y_values, change_col_y)
+plot_data(96)
+```   
+
+## Plot 3
+ Sample Machine learning output with 77% predictive accuracy 
+```{r  echo=FALSE, message=FALSE, warning=FALSE}
+y_pointer <- get_pointer(77)
+df$y <- df$Category
+df$y[y_pointer] -> y_values 
+df$y[y_pointer] <- sapply(y_values, change_col_y)
+plot_data(77)
+```
+
+## Plot 4
+ Sample Machine learning output with 60% predictive accuracy 
+```{r  echo=FALSE, message=FALSE, warning=FALSE}
+y_pointer <- get_pointer(60)
+df$y <- df$Category
+df$y[y_pointer] -> y_values 
+df$y[y_pointer] <- sapply(y_values, change_col_y)
+plot_data(60)
+```
