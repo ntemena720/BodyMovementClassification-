@@ -1,5 +1,5 @@
-# machinelearning
-Machine learning Course Project
+# Classification of Body movement using wearable data
+
 
 ML_project.Rmd - r-markdown file for the coursera Machine learning course. R code tries to predict or classify body movements based 
 from an actual data.  
