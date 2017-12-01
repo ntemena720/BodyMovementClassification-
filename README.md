@@ -1,8 +1,9 @@
 # Classification of Body movement using wearable data
 
 
-ML_project.Rmd - r-markdown file for the coursera Machine learning course. R code tries to predict or classify body movements based 
-from an actual data.  
+ML_project.Rmd - R code that tries to classify body movements based from an actual wearable data. applied RF and SVM which yielded 99.2 and 93.3% accuracy respectively. Below is the RF plot of actual vs preddiction.  
+
+![Plot](https://github.com/ntemena720/BodyMovementClassification-/blob/master/plot.PNG)
 
 ML_project.html - is html version of ML_project.Rmd file. To view: https://cdn.rawgit.com/ntemena720/BodyMovementClassification-/fb13583e/ML_project.html
 
